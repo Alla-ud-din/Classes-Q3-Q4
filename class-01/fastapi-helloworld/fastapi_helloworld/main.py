@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-
+def first_funtion()->str:
+    return "Hello world"
+print(first_funtion())
 app = FastAPI()
 
 
@@ -10,5 +12,10 @@ def read_root():
 @app.get('/city')
 def city():
     return {"city": "Lahore"}
+
+
+@app.get("/piaic/")
+def piaic():
+    return {"organization": "piaic"}
 
 
