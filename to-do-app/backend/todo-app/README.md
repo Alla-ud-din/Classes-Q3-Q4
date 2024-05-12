@@ -36,9 +36,10 @@ Replacing "postgresql" with "postgresql+psycopg" achieves two things:
 * It clarifies that you're connecting to a PostgreSQL database.  
 * It explicitly specifies psycopg as the driver to be used for connection and communication.    
 
-## Psycopg (PostgreSQL Driver):
+
+SQLAlchemy is a powerful ORM,  It acts as a bridge between your object-oriented Python code and the underlying database.  
+SQLAlchemy is designed to work with various relational databases like PostgreSQL, MySQL, SQLite, and more. You can use the same core functionalities with different database systems by using the appropriate driver.  
 psycopg is a popular Python library that acts as a driver for connecting to PostgreSQL databases.  
 It allows SQLAlchemy to communicate effectively with PostgreSQL by translating Python objects and queries into appropriate PostgreSQL commands.  
-SQLAlchemy is designed to work with various relational databases like PostgreSQL, MySQL, SQLite, and more. You can use the same core functionalities with different database systems by using the appropriate driver. 
 
 
