@@ -89,7 +89,7 @@ The .create_all(engine) method is called on the metadata object. This method, pr
     * Session(engine): This part creates a new session object using SQLModel's Session class. This engine manages the connection pool and interacts with the database server.  
     * as session: This assigns the created session object to the variable named session within the indented block. The session object will be used to interact with the database.  
 
-# yield session:
+## yield session:
 
 * The yield keyword within the context manager pauses the execution of the function at this point.
 * When you call get_session() in your application code, the function creates a session using Session(engine), assigns it to session, and then pauses its execution using yield session.
