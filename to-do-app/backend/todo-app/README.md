@@ -46,3 +46,17 @@ psycopg is a popular Python library that acts as a driver for connecting to Post
 It allows SQLAlchemy to communicate effectively with PostgreSQL by translating Python objects and queries into appropriate PostgreSQL commands.  
 
 
+# SQLModel.metadata.create_all(engine)  
+
+* SQLModel.metadata:  
+
+This line references an attribute called metadata that belongs to the SQLModel class in the SQLModel library.
+metadata is an instance of the MetaData class from SQLAlchemy, which acts as a registry for all the database tables defined using SQLModel in your application.  
+
+* What Does metadata Do?
+
+As you define models (classes) in your application that inherit from SQLModel, these models represent your database tables.
+When you create a model instance, SQLModel automatically registers it with the metadata object. This registration process essentially tracks the structure and relationships between your models (tables).  
+
+* create_all(engine):
+The .create_all(engine) method is called on the metadata object. This method, provided by SQLAlchemy, iterates through all the registered models (tables) within the metadata and attempts to create them in the database specified by the engine argument.
