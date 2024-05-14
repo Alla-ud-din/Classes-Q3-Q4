@@ -8,6 +8,8 @@ Dependency injection (DI) is a programming technique for providing an object wit
 
 # from sqlmodel import SQLModel, Field, create_engine, Session, select  
 ## SQLModel  
+* SQLModel is a Python library built on top of SQLAlchemy that simplifies interacting with relational databases. It offers a more Pythonic and streamlined approach compared to using SQLAlchemy directly.  
+* It is an ORM based on SQLAlchemy.
 * This python library helps define models representing database tables.  
 * SQLModel acts as a bridge between your Python application and a relational database like PostgreSQL or MySQL.  
 * You create classes in Python that inherit from SQLModel to define your data models. These classes represent the structure of your tables.  
@@ -36,6 +38,7 @@ Replacing "postgresql" with "postgresql+psycopg" achieves two things:
 * It clarifies that you're connecting to a PostgreSQL database.  
 * It explicitly specifies psycopg as the driver to be used for connection and communication.    
 
+psycopg is a python provide driver to translate python code into PostgreSQL (SQL) language 
 
 SQLAlchemy is a powerful ORM,  It acts as a bridge between your object-oriented Python code and the underlying database.  
 SQLAlchemy is designed to work with various relational databases like PostgreSQL, MySQL, SQLite, and more. You can use the same core functionalities with different database systems by using the appropriate driver.  
