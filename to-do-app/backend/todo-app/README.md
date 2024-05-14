@@ -45,6 +45,23 @@ SQLAlchemy is designed to work with various relational databases like PostgreSQL
 psycopg is a popular Python library that acts as a driver for connecting to PostgreSQL databases.  
 It allows SQLAlchemy to communicate effectively with PostgreSQL by translating Python objects and queries into appropriate PostgreSQL commands.  
 
+# engine = create_engine(connection_string, connect_args={'sslmode':'require'}, pool_recycle=300, pool_size=10, echo=True)
+
+* connect_args={'sslmode':'require'}   
+
+SSL (Secure Sockets Layer) encrypts communication between your application and the database server  
+
+* pool_recycle=300  
+
+It specifies the time (in seconds) after which unused connections within the pool are recycled.  
+
+* pool_size=10  
+
+It specifies the initial number of connections that will be established in the connection pool. By default pool size in SQLAlchemy is 5.  
+
+* echo=True  
+
+Setting echo=True as an argument to create_engine enables detailed logging of database interactions. This means SQLAlchemy will print information to your console
 
 # SQLModel.metadata.create_all(engine)  
 
@@ -58,5 +75,22 @@ metadata is an instance of the MetaData class from SQLAlchemy, which acts as a r
 As you define models (classes) in your application that inherit from SQLModel, these models represent your database tables.
 When you create a model instance, SQLModel automatically registers it with the metadata object. This registration process essentially tracks the structure and relationships between your models (tables).  
 
-* create_all(engine):
-The .create_all(engine) method is called on the metadata object. This method, provided by SQLAlchemy, iterates through all the registered models (tables) within the metadata and attempts to create them in the database specified by the engine argument.
+* create_all(engine):  
+The .create_all(engine) method is called on the metadata object. This method, provided by SQLAlchemy, iterates through all the registered models (tables) within the metadata and attempts to create them in the database specified by the engine argument.  
+
+
+* def get_session():  
+*    with Session(engine) as session:   
+*        yield session   
+
+## with Session(engine) as session::
+
+* This line utilizes a context manager to create a session object and manage its lifecycle.
+    * Session(engine): This part creates a new session object using SQLModel's Session class. This engine manages the connection pool and interacts with the database server.  
+    * as session: This assigns the created session object to the variable named session within the indented block. The session object will be used to interact with the database.  
+
+# yield session:
+
+* The yield keyword within the context manager pauses the execution of the function at this point.
+* When you call get_session() in your application code, the function creates a session using Session(engine), assigns it to session, and then pauses its execution using yield session.
+* This essentially "yields" control back to the calling code, providing access to the created session within the context of the with block.
