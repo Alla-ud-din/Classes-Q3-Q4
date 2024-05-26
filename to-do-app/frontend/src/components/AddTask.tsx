@@ -1,6 +1,22 @@
+'use client'
+import { add_todo } from "@/actions/actions";
+import { useEffect, useRef } from "react";
+import { useFormState } from "react-dom";
+import toast from "react-hot-toast";
 export default function AddTask() {
+    const ref = useRef<HTMLFormElement>(null)
+    const [state, formAction] = useFormState(add_todo, {status:" ", message:""})
+    const {status, message} = state;
+    useEffect(()=>{
+        if(status == 'success'){
+            ref.current?.reset()
+            toast.success(message)
+        }else if (status== "error") {
+            toast.error(message)
+        }
+    },[state])
     return (
-    <form className="flex flex-col gap-x-3 w-full justify-between  items-center">
+    <form ref={ref} action = {formAction} className="flex flex-col gap-x-3 w-full justify-between  items-center">
         <input
         type="text"
         placeholder="Add Task here"

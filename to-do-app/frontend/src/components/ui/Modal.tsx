@@ -1,29 +1,32 @@
 import { Button } from "@/components/ui/button"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import AddTask from "../AddTask"
+import EditTask from "../EditTask"
+import { Todo } from "../../../types"
 
 
-export function Modal() {
-    return (
+export function Modal({children, title, Adding, Editing, task}:{children:React.ReactNode, title:string, Adding?:boolean, Editing?:boolean, task:Todo}) {
+  return (
     <Dialog>
-        <DialogTrigger asChild>
-        <Button variant="default" className="w-full bg-teal-600 px-2 py-1 text-white uppercase text-lg">Add Task</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+      <DialogTrigger asChild>
+        {children}
+        
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
-            
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <AddTask />
-        </DialogContent>
+        {Adding && <AddTask/>}
+        {Editing && <EditTask task = {task} />}
+      </DialogContent>
     </Dialog>
-    )
+  )
 }
