@@ -7,6 +7,7 @@ export default async function TodoTable() {
         cache: 'no-store'
     })
     const data = await response.json()
+    console.log(data)
     const todo_list : Todo[] = data.sort((a:Todo,b:Todo)=>a.id - b.id)
 
   return (

@@ -8,6 +8,7 @@ Dependency injection (DI) is a programming technique for providing an object wit
 
 # from sqlmodel import SQLModel, Field, create_engine, Session, select  
 ## SQLModel  
+* Creater of SQLModel and FastAPI is same. So functionality of both is highly compatible.
 * SQLModel is a Python library built on top of SQLAlchemy that simplifies interacting with relational databases. It offers a more Pythonic and streamlined approach compared to using SQLAlchemy directly.  
 * It is an ORM based on SQLAlchemy.
 * This python library helps define models representing database tables.  
