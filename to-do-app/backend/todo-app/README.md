@@ -94,4 +94,9 @@ The .create_all(engine) method is called on the metadata object. This method, pr
 
 * The yield keyword within the context manager pauses the execution of the function at this point.
 * When you call get_session() in your application code, the function creates a session using Session(engine), assigns it to session, and then pauses its execution using yield session.
-* This essentially "yields" control back to the calling code, providing access to the created session within the context of the with block.
+* This essentially "yields" control back to the calling code, providing access to the created session within the context of the with block.  
+
+
+
+# To generate random key (SECRET_KEY)  
+python -c "import secrets; print(secrets.token_hex(32))"
