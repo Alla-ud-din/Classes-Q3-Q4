@@ -2,10 +2,11 @@ from datetime import timedelta
 from fastapi import FastAPI, Depends, HTTPException , status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import SQLModel, Field, create_engine, Session, select
-from todo_app import setting , user
+from todo_app import setting
+from todo_app.db import create_tables, get_session
+from todo_app.router import user
 from typing import Annotated
 from contextlib import asynccontextmanager
-
 from todo_app.auth import EXPIRY_TIME, authenticate_user, create_access_token, create_refresh_token, current_user, validate_refresh_token
 from todo_app.models import Todo, Todo_Create, Todo_Edit, Token, User
 
@@ -27,18 +28,18 @@ from todo_app.models import Todo, Todo_Create, Todo_Edit, Token, User
 
 
 # engine is one for whole application
-connection_string: str = str(setting.DATABASE_URL).replace(
-    "postgresql", "postgresql+psycopg")
-engine = create_engine(connection_string, connect_args={"sslmode": "require"}, pool_recycle=300, pool_size=10, echo=True)
+# connection_string: str = str(setting.DATABASE_URL).replace(
+#     "postgresql", "postgresql+psycopg")
+# engine = create_engine(connection_string, connect_args={"sslmode": "require"}, pool_recycle=300, pool_size=10, echo=True)
 
 
-def create_tables():
-    SQLModel.metadata.create_all(engine)
+# def create_tables():
+#     SQLModel.metadata.create_all(engine)
 
 
-def get_session():
-    with Session(engine) as session:
-        yield session
+# def get_session():
+#     with Session(engine) as session:
+#         yield session
 
 
 @asynccontextmanager
