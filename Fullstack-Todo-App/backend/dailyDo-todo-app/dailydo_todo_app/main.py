@@ -24,8 +24,7 @@ class Todo (SQLModel, table=True):
 # engine is one for whole application
 connection_string: str = str(setting.DATABASE_URL).replace(
     "postgresql", "postgresql+psycopg")
-engine = create_engine(connection_string, connect_args={
-                       "sslmode": "require"}, pool_recycle=300, pool_size=10, echo=True)
+engine = create_engine(connection_string, connect_args={}, pool_recycle=300, pool_size=10, echo=True)
 
 
 def create_tables():
@@ -46,7 +45,7 @@ async def lifespan(app: FastAPI):
 
 
 app: FastAPI = FastAPI(
-    lifespan=lifespan, title="dailyDo Todo App", version='1.0.0')
+    lifespan=lifespan, title="dailyDo Todo App", version='1.0.')
 
 
 @app.get('/')
