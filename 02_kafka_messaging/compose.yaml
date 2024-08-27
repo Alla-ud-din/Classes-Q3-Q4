@@ -1,5 +1,40 @@
-# version: '3.8'
+version: '3.8'
+name: template01
 services:
+  api:
+    build:
+      context: ./todo
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./todo:/code  # Sync local development directory with the container
+    depends_on:
+        - postgres_db
+        - broker
+    ports:
+      - "8000:8000"  # Expose container port 8000 to host port 8000  
+  api2:
+    build:
+      context: ./microservice_02
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./microservice_02:/code  # Sync local development directory with the container
+    depends_on:
+        - postgres_db
+        - broker
+    ports:
+      - "8002:8000"  # Expose container port 8000 to host port 8000  
+  postgres_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresCont
+    environment:
+        - POSTGRES_USER=ziakhan
+        - POSTGRES_PASSWORD=my_password
+        - POSTGRES_DB=mydatabase
+    ports:
+        - '5433:5432'
+    volumes:
+        - postgres_db:/var/lib/postgresql/data
   broker:
     image: apache/kafka:3.7.0
     hostname: broker
@@ -21,6 +56,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -32,6 +68,9 @@ services:
       DYNAMIC_CONFIG_ENABLED: "true"
     depends_on:
       - broker
+volumes:
+  postgres_db:
+    driver: local
 networks:
   default:
     driver: bridge
