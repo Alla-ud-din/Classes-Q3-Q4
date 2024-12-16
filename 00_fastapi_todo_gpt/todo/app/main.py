@@ -40,7 +40,7 @@ app = FastAPI(lifespan=lifespan, title="Hello World API with DB",
               version="0.0.1",
               servers=[{
                   # ADD Cloudflared URL Here Before Creating GPT Action
-                  "url": "https://livecam-aside-fate-reservation.trycloudflare.com",
+                  "url": "https://discipline-rosa-institute-mills.trycloudflare.com",
                   "description": "Development Server"
               }]
               )
