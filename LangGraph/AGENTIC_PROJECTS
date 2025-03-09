@@ -1,0 +1,688 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Alla-ud-din/Classes-Q3-Q4/blob/master/LangGraph/AGENTIC_PROJECTS\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "gT-vFiMrl2KH"
+      },
+      "source": [
+        "## **Project 01: User-Chat-Interactions**\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### **Objective:**\n",
+        "Make your chat-agent developed in 00_chat_agent smarter by allowing it to:\n",
+        "1. Get help from a human assistant when needed.\n",
+        "2. Pause and ask the user for extra information if something is unclear.\n",
+        "3. Personalize its answers using long-term memory.\n",
+        "4. Offloading conversation to Human\n",
+        "\n",
+        "**Note:** This project builds on the skills learned in Project 00 and prepares you for advanced Agentic AI features like dynamic workflows and user personalization.\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### **Requirements:**\n",
+        "\n",
+        "1. **Human Assistant Interrupts (Static Interrupts):**\n",
+        "   - Add a feature where your chatbot can **pause** and connect to a human assistant if needed.\n",
+        "   - This can be a **static interrupt**—you decide when the chatbot needs help from a human.\n",
+        "   - Example: If the chatbot can’t answer a question or doesn’t have enough information, it stops and sends the question to a human for assistance.\n",
+        "\n",
+        "**Reference Material:**\n",
+        "- [Static Breakpoints](https://github.com/panaversity/learn-agentic-ai/blob/main/12_langchain_ecosystem/langgraph/course-notebooks/module-3/2_breakpoints.ipynb)\n",
+        "\n",
+        "2. **Ask the User for More Information (Dynamic Interrupts):**\n",
+        "   - Make the chatbot smart enough to **pause its workflow** and ask the user for more information when it’s confused.\n",
+        "   - Steps:\n",
+        "     - Add a **decision step** after each user message.\n",
+        "     - If the chatbot detects a question or needs more details, it pauses and asks the user to clarify.\n",
+        "     - The user can:\n",
+        "       - **Answer the question** to help the chatbot.\n",
+        "       - **Skip the question** and let the chatbot guess the best answer.\n",
+        "\n",
+        "**Reference Material:**\n",
+        "- [Dynamic Breakpoints](https://github.com/panaversity/learn-agentic-ai/blob/main/12_langchain_ecosystem/langgraph/course-notebooks/module-3/4_dynamic_breakpoints.ipynb)\n",
+        "- [Editing State](https://github.com/panaversity/learn-agentic-ai/blob/main/12_langchain_ecosystem/langgraph/course-notebooks/module-3/3_edit_state_human_feedback.ipynb)\n",
+        "\n",
+        "3. **(Optional) Personalize Using Long-Term Memory:**\n",
+        "   - Use a memory system to **save important details** about the user.\n",
+        "   - Examples of what to remember:\n",
+        "     - Preferences (e.g., favorite subjects, preferred clothing styles).\n",
+        "     - Recurring needs (e.g., study schedules, favorite recipes).\n",
+        "   - Use this memory to give **better and more personal answers** over time.\n",
+        "\n",
+        "**Tools:** Use **LangGraph Memory Store** to save and retrieve user data.\n",
+        "\n",
+        "**Reference Material:**\n",
+        "- [Concept](https://langchain-ai.github.io/langgraph/concepts/memory/#long-term-memory)\n",
+        "- [Memory Template](https://github.com/langchain-ai/memory-template)\n",
+        "\n",
+        "*Note:* This is an optional step. Focus on completing the first two requirements before attempting long-term memory integration if you feel confident.\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### **Deliverables:**\n",
+        "- A working chatbot prototype with:\n",
+        "  1. Human assistant interrupts.\n",
+        "  2. Dynamic user clarifications.\n",
+        "  3. Long-term memory for personalization (Optional).\n",
+        "\n",
+        "---\n",
+        "\n",
+        "## **Submission Form**\n",
+        "\n",
+        "Submit your projects here:  \n",
+        "[**Project Submission Form**](https://forms.gle/yB6X4TzE2dCVThCj8)\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### **Example Scenarios:**\n",
+        "\n",
+        "1. **Human Assistant Interrupt:**\n",
+        "   - User asks: *\"Can you help with tax calculations?\"*\n",
+        "   - Chatbot: *\"Let me connect you to a human assistant for this question.\"*\n",
+        "   \n",
+        "2. **Dynamic Interrupt:**\n",
+        "   - User asks: *\"Plan a study schedule for me.\"*\n",
+        "   - Chatbot: *\"What is your next exam date? Should I include break times?\"*\n",
+        "\n",
+        "3. **Personalized Memory (Optional):**\n",
+        "   - User: *\"What should I study today?\"*\n",
+        "   - Chatbot: *\"Last time, you said your math exam is next week. Let’s focus on trigonometry today.\"*\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### **Outcomes:**\n",
+        "By completing this project, you will:\n",
+        "1. Learn how to connect a chatbot with a human assistant.\n",
+        "2. Understand how to make chatbots pause and ask for clarifications when needed.\n",
+        "3. Use long-term memory to personalize chatbot responses."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "metadata": {
+        "id": "yU9nIgRiFzwO"
+      },
+      "outputs": [],
+      "source": [
+        "%%capture --no-stderr\n",
+        "%pip install -U langgraph langsmith langchain_google_genai tavily-python langchain_community"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "metadata": {
+        "id": "ZAKddmjlGOWZ"
+      },
+      "outputs": [],
+      "source": [
+        "import os\n",
+        "from google.colab import userdata\n",
+        "\n",
+        "os.environ[\"LANGCHAIN_API_KEY\"] = userdata.get('LANGCHAIN_API_KEY')\n",
+        "os.environ[\"LANGCHAIN_TRACING_V2\"] = \"true\"\n",
+        "os.environ[\"LANGCHAIN_PROJECT\"] = \"langchain-academy\"\n",
+        "os.environ[\"TAVILY_API_KEY\"] = userdata.get(\"TAVILY_API_KEY\")\n",
+        "\n",
+        "GEMINI_API_KEY = userdata.get('GEMINI_API_KEY')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "metadata": {
+        "id": "GYTnLIX1GU7S"
+      },
+      "outputs": [],
+      "source": [
+        "from langchain_google_genai import ChatGoogleGenerativeAI\n",
+        "\n",
+        "llm = ChatGoogleGenerativeAI(\n",
+        "    model=\"gemini-2.0-flash\",\n",
+        "    max_retries=2,\n",
+        "    api_key=GEMINI_API_KEY\n",
+        ")\n",
+        "\n",
+        "from langchain_community.tools.tavily_search import TavilySearchResults\n",
+        "tavily_search = TavilySearchResults(max_results=1)\n",
+        "# llm.invoke(\"greet me\")\n",
+        "# tavily_search.invoke(\"What's a 'node' in LangGraph?\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 22,
+      "metadata": {
+        "id": "v2NFxg2BG610",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 407
+        },
+        "outputId": "28e25fa7-f1f2-4c73-c344-5a882cdc4d1f"
+      },
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "image/png": "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\n",
+            "text/plain": [
+              "<IPython.core.display.Image object>"
+            ]
+          },
+          "metadata": {}
+        }
+      ],
+      "source": [
+        "from typing import Annotated, Any, Literal\n",
+        "from typing_extensions import TypedDict\n",
+        "from langgraph.types import Command\n",
+        "from langgraph.graph import StateGraph, START, END\n",
+        "from langgraph.graph.message import add_messages\n",
+        "from langchain_core.messages import HumanMessage, AIMessage, AnyMessage, SystemMessage, RemoveMessage\n",
+        "from langgraph.errors import NodeInterrupt\n",
+        "from IPython.display import Image, display\n",
+        "from langgraph.graph.state import CompiledStateGraph\n",
+        "from langgraph.checkpoint.memory import MemorySaver\n",
+        "\n",
+        "# Define the State class to manage the state transitions\n",
+        "class State(TypedDict):\n",
+        "    user_query: Annotated[list[AnyMessage], add_messages]  # Stores user input messages\n",
+        "    response: Annotated[list[AnyMessage], add_messages]  # Stores assistant responses\n",
+        "    summary: str  # Stores a summary of the conversation\n",
+        "\n",
+        "# Initialize a state graph builder\n",
+        "graph_builder = StateGraph(State)\n",
+        "\n",
+        "# Define tool: Health Tips\n",
+        "def health_tips(state: State) -> Command[Literal[\"summarize_conversation\"]]:\n",
+        "    \"\"\"Provide health tips using Tavily Search.\"\"\"\n",
+        "    user_query = state['user_query'][-1].content  # Extract user query\n",
+        "    tavily_response = tavily_search.invoke(user_query)  # Call Tavily Search API\n",
+        "    formatted_response = \"\\n\\n\".join(\n",
+        "            f\"-  {item.get('content', 'No content')} Source: {item.get('url', 'No URL')}\\n  \"\n",
+        "            for item in tavily_response\n",
+        "        )\n",
+        "    return Command (\n",
+        "        update = {\"response\": [AIMessage(content=formatted_response)]},  # Return the response\n",
+        "        goto = \"summarize_conversation\"\n",
+        "        )\n",
+        "\n",
+        "# Define tool: Medical FAQs\n",
+        "def medical_faqs(state: State) -> Command[Literal[\"summarize_conversation\"]]:\n",
+        "    \"\"\"Provide medical FAQs for a given condition using Tavily Search.\"\"\"\n",
+        "    user_query = state['user_query'][-1].content  # Extract user query\n",
+        "    query = f\"Medical FAQs about: {user_query}\"\n",
+        "    tavily_response = tavily_search.invoke(query)  # Call Tavily Search API\n",
+        "    formatted_response = \"\\n\\n\".join(\n",
+        "            f\"-  {item.get('content', 'No content')} Source: {item.get('url', 'No URL')}\\n  \"\n",
+        "            for item in tavily_response\n",
+        "        )\n",
+        "    return Command (\n",
+        "        update = {\"response\": [AIMessage(content=formatted_response)]},   # Return the response\n",
+        "        goto = \"summarize_conversation\"\n",
+        "    )\n",
+        "\n",
+        "# Define tool: Medication Info\n",
+        "def medication_info(state: State) -> Command[Literal[\"summarize_conversation\"]]:\n",
+        "    \"\"\"Provide information about medications.\"\"\"\n",
+        "    user_query = state['user_query'][-1].content  # Extract user query\n",
+        "    query = f\"Medication information for: {user_query}\"\n",
+        "    tavily_response = tavily_search.invoke(query)  # Call Tavily Search API\n",
+        "    formatted_response = \"\\n\\n\".join(\n",
+        "            f\"-  {item.get('content', 'No content')} Source: {item.get('url', 'No URL')}\\n  \"\n",
+        "            for item in tavily_response\n",
+        "        )\n",
+        "\n",
+        "    return Command(\n",
+        "        update = {\"response\": [AIMessage(content=formatted_response)]},   # Return the response\n",
+        "        goto = \"summarize_conversation\"\n",
+        "    )\n",
+        "\n",
+        "# Define tool: General Query Handler\n",
+        "def general_query_handler(state: State) -> State:\n",
+        "    \"\"\"Handle general queries unrelated to medical topics.\"\"\"\n",
+        "    user_query = state['user_query'][-1].content  # Extract user query\n",
+        "    response = (f\"It seems like your query is unrelated to medical topics. \"\n",
+        "                f\"Here's a general response to '{user_query}': I'm here to help, \"\n",
+        "                \"but I specialize in health-related queries. Could you clarify or ask something health-related?\")\n",
+        "    return Command (\n",
+        "        update = {\"response\": [SystemMessage(content=response)]},   # Return the response\n",
+        "        goto = END\n",
+        "    )\n",
+        "\n",
+        "# List of tools\n",
+        "tools = [health_tips, medical_faqs, medication_info, general_query_handler]\n",
+        "\n",
+        "# Bind tools to the LLM\n",
+        "llm_with_tools = llm.bind_tools(tools)\n",
+        "\n",
+        "\n",
+        "prompt = f\"\"\"You are a helpful medical assistant designed to assist users with their health-related queries.\n",
+        "          You have access to specialized tools for providing health tips, answering medical FAQs, giving medication information, and handling general medical inquiries.\n",
+        "\n",
+        "          - If a user's query falls under any of these categories, return the appropriate tool call.\n",
+        "          - If a user's query is not related to health-related topics, call general_query_handler tool.\n",
+        "          - If you need more details to determine the correct response, ask the user to clarify by replying: 'Can you clarify?'\n",
+        "          - For general prompts like greetings, respond naturally without using a tool.\n",
+        "          - If the user indicates they want to end the conversation, respond with 'END'.\n",
+        "\n",
+        "          Ensure accuracy and relevance in all responses while prioritizing user health and safety.\n",
+        "          \"\"\"\n",
+        "sys_msg = SystemMessage(content=prompt)\n",
+        "# Define the assistant node\n",
+        "def assistant(state: State) -> Command[Literal[\"health_tips\", \"medical_faqs\", \"medication_info\", \"general_query_handler\"]]:\n",
+        "    \"\"\"Generate a response from the assistant using the LLM and tools.\"\"\"\n",
+        "    # Get summary if it exists\n",
+        "    summary = state.get(\"summary\", \"\")\n",
+        "    # If there is summary, then we add it\n",
+        "    if summary:\n",
+        "        # Add summary to system message\n",
+        "        system_message = f\"Summary of conversation earlier and prompt: Summary: {summary}\\n\\nPrompt: {sys_msg}\"\n",
+        "        response = llm_with_tools.invoke([SystemMessage(content=system_message), state[\"user_query\"][-1]])  # Get response from the LLM\n",
+        "    else:\n",
+        "        response = llm_with_tools.invoke([sys_msg, state[\"user_query\"][-1]])  # Get response from the LLM\n",
+        "    if \"Can you clarify?\" in response.content:\n",
+        "        raise NodeInterrupt(f\"Received input is not clear: {state['user_query'][-1]}\")\n",
+        "    if \"END\" in response.content:\n",
+        "        goto = END\n",
+        "    try:\n",
+        "        if hasattr(response, 'tool_calls') and len(response.tool_calls) > 0:  # Check if tool_calls is present\n",
+        "          # print(\"\\n\\nTool call present\", response.tool_calls[-1]['name'])\n",
+        "          goto = response.tool_calls[-1]['name']\n",
+        "        else:\n",
+        "          goto = END\n",
+        "    except Exception as e:\n",
+        "        print(f\"[ERROR in tool_calling]: {e}\")\n",
+        "        goto =  END  # Default to END on error\n",
+        "    # print(\"Response in assistant: \", response.tool_calls)\n",
+        "    return Command(\n",
+        "        update = {\"response\": [response]},  # Return the response\n",
+        "        goto = goto\n",
+        "    )\n",
+        "\n",
+        "# Define tool calling logic\n",
+        "# def tool_calling(state: State) -> Any:\n",
+        "#     \"\"\"Determine the next tool to call based on model responses.\"\"\"\n",
+        "#     if \"END\" in state['response'][-1].content:\n",
+        "#       return END\n",
+        "#     try:\n",
+        "#         if state['response'] and hasattr(state['response'][-1], 'tool_calls') and len(state['response'][-1].tool_calls) > 0:\n",
+        "#             tool_name = state['response'][-1].tool_calls[-1].get(\"name\", None)  # Extract tool name\n",
+        "#             if tool_name:\n",
+        "#                 return tool_name  # Call the specific tool\n",
+        "#         return END  # If no tool is needed, go directly to END\n",
+        "#     except Exception as e:\n",
+        "#         print(f\"[ERROR in tool_calling]: {e}\")\n",
+        "#         return END  # Default to END on error\n",
+        "\n",
+        "# Define the summarize conversation logic\n",
+        "def summarize_conversation(state: State) -> State:\n",
+        "    \"\"\"Summarize the conversation so far.\"\"\"\n",
+        "    # Get the existing summary (if any)\n",
+        "    summary = state.get(\"summary\", \"\")\n",
+        "    # Create the summarization prompt\n",
+        "    if summary:\n",
+        "        summary_message = (\n",
+        "            f\"This is summary of the conversation to date: {summary}\\n\\n\"\n",
+        "            \"Extend the summary by taking into account the new messages above:\"\n",
+        "        )\n",
+        "    else:\n",
+        "        summary_message = \"Create a summary of the conversation above:\"\n",
+        "\n",
+        "    # Add the summarization prompt to the history\n",
+        "    messages = state[\"user_query\"] + state[\"response\"] + [HumanMessage(content=summary_message)]\n",
+        "\n",
+        "    # Filter valid messages (non-empty content)\n",
+        "    valid_messages = [\n",
+        "        message for message in messages\n",
+        "        if hasattr(message, 'content') and message.content  # Ensure 'content' exists and is not empty\n",
+        "    ]\n",
+        "\n",
+        "    # Get the response from the LLM\n",
+        "    response = llm.invoke(valid_messages)\n",
+        "\n",
+        "    # Create RemoveMessage objects for all but the two most recent messages\n",
+        "    delete_messages = [RemoveMessage(id=m.id) for m in state[\"user_query\"][:-1] + state[\"response\"][:-1]]\n",
+        "\n",
+        "    # Return the updated state\n",
+        "    return Command(\n",
+        "        update = {\n",
+        "        \"summary\": str(response.content),  # Update the summary\n",
+        "        \"response\": [state[\"response\"][-1]],  # Keep only the summarization response\n",
+        "        },\n",
+        "        goto = END\n",
+        "    )\n",
+        "\n",
+        "\n",
+        "# Initialize the state graph builder\n",
+        "builder: StateGraph = StateGraph(State)\n",
+        "\n",
+        "# Define nodes in the graph\n",
+        "builder.add_node(\"assistant\", assistant)\n",
+        "builder.add_node(\"health_tips\", health_tips)\n",
+        "builder.add_node(\"medical_faqs\", medical_faqs)\n",
+        "builder.add_node(\"medication_info\", medication_info)\n",
+        "builder.add_node(\"general_query_handler\", general_query_handler)\n",
+        "builder.add_node(\"summarize_conversation\", summarize_conversation)\n",
+        "\n",
+        "# Define edges in the graph\n",
+        "builder.add_edge(START, \"assistant\")  # Start with the assistant node\n",
+        "# builder.add_conditional_edges(\"assistant\", tool_calling)  # Add conditional edges for tool calling\n",
+        "\n",
+        "# Tools transition to summarize_conversation\n",
+        "# builder.add_edge(\"health_tips\", \"summarize_conversation\")\n",
+        "# builder.add_edge(\"medical_faqs\", \"summarize_conversation\")\n",
+        "# builder.add_edge(\"medication_info\", \"summarize_conversation\")\n",
+        "# This was the problem, general_query_handler should point to END, not a node called \"END\"\n",
+        "# builder.add_edge(\"general_query_handler\", END) # Changed from builder.add_edge(\"general_query_handler\", \"END\")\n",
+        "\n",
+        "# Summarize conversation transitions to END\n",
+        "# builder.add_edge(\"summarize_conversation\", END)\n",
+        "\n",
+        "# Initialize memory to save conversation\n",
+        "memory: MemorySaver = MemorySaver()\n",
+        "\n",
+        "# Compile the state graph\n",
+        "graph: CompiledStateGraph = builder.compile(interrupt_before = [\"summarize_conversation\"], checkpointer=memory)\n",
+        "\n",
+        "# Visualize the graph\n",
+        "display(Image(graph.get_graph(xray=True).draw_mermaid_png()))\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 23,
+      "metadata": {
+        "id": "nyzNqaQkUvDo"
+      },
+      "outputs": [],
+      "source": [
+        "# Specify a thread configuration\n",
+        "config = {\"configurable\": {\"thread_id\": \"1\"}}"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 24,
+      "metadata": {
+        "id": "3YUwum7mtMSR",
+        "outputId": "6b597fb0-0339-4507-dfbb-509aa62f570c",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Welcome to HealthHub! How can I assist you today?  How can I improve my cardiovascular health?\n",
+            "Assistant_tool:  -  High cholesterol and high blood pressure can make you more likely to have heart disease or a heart attack. If you’re between the ages of 40 and 59 years, taking aspirin every day may lower your risk of heart attack and stroke — but doctors don’t recommend it for everyone. Eating healthy can help lower your risk of heart disease. People who have overweight or obesity are at an increased risk for heart disease, high blood pressure, and type 2 diabetes. Getting regular physical activity can help prevent heart disease. Quitting smoking helps lower your risk of heart disease and heart attack. Managing stress can help prevent serious health problems like heart disease, depression, and high blood pressure. Source: https://odphp.health.gov/myhealthfinder/health-conditions/heart-health/keep-your-heart-healthy\n",
+            "  \n",
+            "Are you satisfied with the response? (yes/no): yes\n",
+            "Welcome to HealthHub! How can I assist you today?  end\n",
+            "\n",
+            "\n",
+            "Goodbye! Stay healthy and take care!\n"
+          ]
+        }
+      ],
+      "source": [
+        "# # Main interaction loop\n",
+        "\n",
+        "exit = True\n",
+        "while exit:\n",
+        "    user_input = input(\"Welcome to HealthHub! How can I assist you today?  \")\n",
+        "    # if user_input.lower() in [\"quit\", \"exit\", \"q\"]:\n",
+        "    #     print(\"\\n\\nGoodbye! Stay healthy and take care!\")\n",
+        "    #     break\n",
+        "\n",
+        "\n",
+        "    for result in graph.stream({\"user_query\": user_input}, config, stream_mode=\"updates\"):\n",
+        "        # print(\"\\n\\nResult:\", result)\n",
+        "        if \"assistant\" in result and result[\"assistant\"] and result['assistant']['response'][-1].content:\n",
+        "            if \"END\" in result['assistant']['response'][-1].content:\n",
+        "                print(\"\\n\\nGoodbye! Stay healthy and take care!\")\n",
+        "                exit = False\n",
+        "                break\n",
+        "            print(\"Assistant:\", result['assistant']['response'][-1].content)\n",
+        "        for tool in [\"health_tips\", \"medical_faqs\", \"medication_info\", \"general_query_handler\"]:\n",
+        "            if tool in result:\n",
+        "                print(\"Assistant_tool: \", result[tool]['response'][-1].content)\n",
+        "\n",
+        "        if \"__interrupt__\" in result and result[\"__interrupt__\"] and \"Received input is not clear\" in result[\"__interrupt__\"][-1].value: # Check if '__interrupt__' key exists and is not empty\n",
+        "            user_input_clear = input(\"Kindly explain your query?  \")\n",
+        "            # if user_input_clear.lower() in [\"quit\", \"exit\", \"q\"]:\n",
+        "            #     print(\"\\n\\nGoodbye! Stay healthy and take care!\")\n",
+        "            #     exit = False\n",
+        "            #     break\n",
+        "            graph.update_state(config, {\"user_query\": user_input + user_input_clear})\n",
+        "            for result in graph.stream(None, config, stream_mode=\"updates\"):\n",
+        "                print(\"\\n\\nInternal Result:\", result)\n",
+        "                if \"assistant\" in result and result[\"assistant\"] and result['assistant']['response'][-1].content:\n",
+        "                    if \"END\" in result['assistant']['response'][-1].content:\n",
+        "                        print(\"\\n\\nGoodbye! Stay healthy and take care!\")\n",
+        "                        exit = False\n",
+        "                        break\n",
+        "                    print(\"Assistant:\", result['assistant']['response'][-1].content)\n",
+        "                for tool in [\"health_tips\", \"medical_faqs\", \"medication_info\", \"general_query_handler\"]:\n",
+        "                    if tool in result:\n",
+        "                        print(\"Assistant_tool: \", result[tool]['response'][-1].content)\n",
+        "        if \"__interrupt__\" in result:\n",
+        "            while True:\n",
+        "                # Get user feedback\n",
+        "                user_approval = input(\"Are you satisfied with the response? (yes/no): \")\n",
+        "                # Check approval\n",
+        "                if user_approval.lower() == \"yes\":\n",
+        "                    # If approved, continue the graph execution\n",
+        "                    for result in graph.stream(None, config, stream_mode=\"updates\"):\n",
+        "                        # print(\"\\n\\nResult in second interrupt:\", result)\n",
+        "                        pass\n",
+        "                    break\n",
+        "\n",
+        "                elif user_approval.lower() == \"no\":\n",
+        "                    user_input_detail = input(\"Kinly provide more details? \")\n",
+        "                    # if user_input_detail.lower() in [\"quit\", \"exit\", \"q\"]:\n",
+        "                    #     print(\"\\n\\nGoodbye! Stay healthy and take care!\")\n",
+        "                    #     exit = False\n",
+        "                    #     break\n",
+        "                    # Conditionally concatenate user_input_clear if it exists\n",
+        "                    # if user_input_clear:\n",
+        "                    #     user_input_detail = f\"{user_input_clear} {user_input_detail}\"\n",
+        "                    for result in graph.stream({\"user_query\": user_input + user_input_detail }, config, stream_mode=\"updates\"):\n",
+        "                        for tool in [\"health_tips\", \"medical_faqs\", \"medication_info\", \"general_query_handler\"]:\n",
+        "                            if tool in result:\n",
+        "                                print(\"Assistant_tool: \", result[tool]['response'][-1].content)\n",
+        "\n",
+        "                else:\n",
+        "                    print(\"Invalid input. Please enter 'yes' or 'no'.\")\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "max9AIUnumK6"
+      },
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "test = {'response': [AIMessage(content='', additional_kwargs={'function_call': {'name': 'general_query_handler', 'arguments': '{\"state\": {\"user_query\": [\"What\\'s the weather forecast today?\"], \"response\": [], \"summary\": \"\"}}'}}, response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []}, 'finish_reason': 'STOP', 'safety_ratings': []}, id='run-c6ded3ca-2111-40ca-a080-7c56280c44f3-0', tool_calls=[{'name': 'general_query_handler', 'args': {'state': {'user_query': [\"What's the weather forecast today?\"], 'response': [], 'summary': ''}}, 'id': '081c2501-2ba9-4bbb-a628-168ec3a87c2e', 'type': 'tool_call'}], usage_metadata={'input_tokens': 275, 'output_tokens': 19, 'total_tokens': 294, 'input_token_details': {'cache_read': 0}}), SystemMessage(content=\"It seems like your query is unrelated to medical topics. Here's a general response to 'What's the weather forecast today?': I'm here to help, but I specialize in health-related queries. Could you clarify or ask something health-related?\", additional_kwargs={}, response_metadata={}, id='7b209a97-6595-48e2-8342-c7aebcc618b4'), AIMessage(content='END', additional_kwargs={}, response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []}, 'finish_reason': 'STOP', 'safety_ratings': []}, id='run-f4640471-5a25-4a74-a7dc-da3f26350a84-0', usage_metadata={'input_tokens': 274, 'output_tokens': 2, 'total_tokens': 276, 'input_token_details': {'cache_read': 0}})], 'user_query': [HumanMessage(content=\"What's the weather forecast today?\", additional_kwargs={}, response_metadata={}, id='7e1bda9e-ba02-4204-9f92-83ed0617aa0b'), HumanMessage(content='thank you. see you next time', additional_kwargs={}, response_metadata={}, id='4787ea8d-e8a2-477a-b4c6-277d1872157b')]}"
+      ],
+      "metadata": {
+        "id": "TBCMQvHeSJGb"
+      },
+      "execution_count": 15,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "if \"END\" in test['response'][-1].content:\n",
+        "      print(\"END\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "D91zqQu-SOoD",
+        "outputId": "1b83ef0d-4d9e-47ac-f066-4667fca7ef7c"
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "END\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "result[\"health_tips\"][\"response\"][-1].content"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 146
+        },
+        "id": "BAvcjf8jy2Z7",
+        "outputId": "9c55e7b0-36f4-4acb-99d0-6b349ae49bfe"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "KeyError",
+          "evalue": "'health_tips'",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-17-15dfacabd77f>\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mresult\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"health_tips\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"response\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcontent\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mKeyError\u001b[0m: 'health_tips'"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "Response in assistant:  content='' additional_kwargs={'function_call': {'name': 'medical_faqs', 'arguments': '{\"state\": {\"user_query\": [\"common symptoms of diabetes\"], \"response\": [], \"summary\": \"\"}}'}} response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []}, 'finish_reason': 'STOP', 'safety_ratings': []} id='run-a51da32a-17ae-49db-85f9-b1ed909097aa-0' tool_calls=[{'name': 'medical_faqs', 'args': {'state': {'user_query': ['common symptoms of diabetes'], 'response': [], 'summary': ''}}, 'id': '3a6bbaed-e848-40f0-9016-0014cb2d3413', 'type': 'tool_call'}] usage_metadata={'input_tokens': 274, 'output_tokens': 13, 'total_tokens': 287, 'input_token_details': {'cache_read': 0}}"
+      ],
+      "metadata": {
+        "id": "ULn45rn9QHek"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "d6Ue-NVbTP2G",
+        "collapsed": true
+      },
+      "outputs": [],
+      "source": [
+        "snapshot = graph.get_state(config)\n",
+        "# snapshot"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "snapshot.next"
+      ],
+      "metadata": {
+        "id": "jlmA9oN7wKjK"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "graph.update_state(config,{\"user_query\": \"I have headache since morning. what should i do?\"})\n",
+        "for result1 in graph.stream(None, config, stream_mode=\"updates\"):\n",
+        "    print(\"Inrernal Result: \", result1)"
+      ],
+      "metadata": {
+        "id": "gaD5lZdM8D8N"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for result1 in graph.stream(None, config, stream_mode=\"updates\"):\n",
+        "    print(\"Inrernal Result: \", result1)"
+      ],
+      "metadata": {
+        "id": "w14pdfGB1b-H"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "rVzuJY5niCRg"
+      },
+      "outputs": [],
+      "source": [
+        "snapshot.values['response'][-1].content"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "KzKIZZKRnyG5"
+      },
+      "outputs": [],
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ]
+    }
+  ],
+  "metadata": {
+    "accelerator": "GPU",
+    "colab": {
+      "gpuType": "T4",
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
